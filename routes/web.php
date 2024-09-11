@@ -13,4 +13,4 @@ Route::group(['prefix' => 'posts'], function() {
 });
 
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+ Route::get('/', [HomeController::class, 'index'])->name('home');
