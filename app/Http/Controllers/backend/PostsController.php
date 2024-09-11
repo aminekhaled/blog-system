@@ -7,6 +7,7 @@ use App\Http\Requests\PostRequest;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Category;
+use App\Services\PostsService;
 use Auth;
 use Illuminate\Support\Facades\File;
 
@@ -37,21 +38,7 @@ class PostsController extends Controller
      */
     public function store(PostRequest $request)
     {
-        if($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time().'.'.$image->getClientOriginalExtension();
-            File::put(public_path('backend/assets/images/posts') . '/' . $imageName, File::get($image));
-        }
-
-        $post = new Post;
-
-        $post->title = $request->title;
-        $post->body = $request->body;
-        $post->image = $imageName;
-        $post->user_id = Auth::user()->id;
-        $post->category_id = $request->category;
-
-        $post->save();
+        (new PostsService)->create($request->all());
 
         return redirect()->route('posts.index')->with('success', 'Post Published Successfully');
     }
@@ -60,9 +47,8 @@ class PostsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Post $post)
     {
-        $post = Post::find($id);
         $categories = Category::all();
 
         return view('backend.posts.edit', compact('post', 'categories'));
@@ -73,25 +59,9 @@ class PostsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        
-        if($request->hasFile('image')) {
-            $image = $request->file('image');
-            $NewimageName = time().'.'.$image->getClientOriginalExtension();
-            File::put(public_path('backend/assets/images/posts') . '/' . $NewimageName, File::get($image));
-        }
-
-        $post = Post::find($id);
-
-        $post->title = $request->title;
-        $post->body = $request->body;
-        $post->image = $request->hasFile('image') ? $NewimageName : $post->image;
-        $post->category_id = $request->category;
-
-        $post->save();
+        (new PostsService)->update($id, $request->all());
 
         return redirect()->route('posts.index')->with('success', 'Post Updated Successfully');
-
-
     }
 
     /**
